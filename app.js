@@ -9,7 +9,7 @@ var cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var adminRouter = require("./routes/adminRoute");
+var adminRouter = require("./routes/adminRoutes");
 
 var app = express();  
  
