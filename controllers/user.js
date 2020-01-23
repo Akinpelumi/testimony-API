@@ -63,29 +63,5 @@ const login =  (req,  res,  next) => {
   })
 };
 
-const total = (req,  res,  next) => {
-    User.find({},  (err, data, next) => {
-        if(err) next(next);
-        else{
-          return res.status(200).json({data})
-        }
-    })
-};
 
-const  updateUser  = (req,  res,  next)  => {
-  if(!req.user){
-    return res.status(401).json({
-      message:  'You need to be an  admin to do this'
-    })
-  }else{
-    User.findByIdAndUpdate(req.params.id, {isAdmin:  true}, (err) => {
-      if(err) next(next);
-      else{
-        return res.status(200).json('Update successful')
-      }
-    })
-  }   
-};
-
-
-module.exports = { signup, login, total, updateUser  };
+module.exports = { signup, login  };
