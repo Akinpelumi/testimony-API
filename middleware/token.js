@@ -1,4 +1,5 @@
 const User = require('../models/users');
+const Admin = require('../models/admin');
 const jwt = require('jsonwebtoken');
 var dotenv = require('dotenv').config();
 
@@ -14,11 +15,21 @@ module.exports  =  (req, res, next)  => {
             if(err){
                 return  next(err);
             }else{
-                User.find((err) => {
+                User.find(async(err) => {
                     if (err) return next (err);
                     else {
-                        req.user = decoded.isAdmin;
-                        next();
+                        if (!decoded.isAdmin) {
+                            const user = await User.findOne({
+                                _id: decoded.id
+                            });
+                            req.user = user;
+                            return next();
+                        }
+                        const user = await Admin.findOne({
+                            _id: decoded.id
+                        });
+                        req.user = user;
+                        return next();
                     }
                 })
             }

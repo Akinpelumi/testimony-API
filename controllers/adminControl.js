@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const Admin = require("../models/admin");
 const jwt = require("jsonwebtoken");
+const User = require("../models/users");
 
 const adminReg = async (req, res, next) => {
     try {
@@ -15,7 +16,7 @@ const adminReg = async (req, res, next) => {
         });
         if (data) {
             return res.status(400).json({
-                message: "Admin has been registered already"
+                message: `Admin with email '${email}' has been previously registered`
             });
         } else {
             var salt = await bcrypt.genSalt(10);
@@ -26,10 +27,19 @@ const adminReg = async (req, res, next) => {
                 email,
                 isAdmin
             });
-            await newAdmin.save();
-            console.log(newAdmin);
+            const adminDetails = await newAdmin.save();
+            const { _id, created_at, updated_at } = adminDetails
+            const data = {
+               _id,
+               name,
+               email,
+               isAdmin,
+               updated_at,
+               created_at
+            }
             return res.status(201).json({
-                message: "Admin created successfully"
+                message: "Admin created successfully",
+                data: data,
             });
         }
     } catch (err) {
@@ -58,6 +68,7 @@ const adminLogin = async (req, res, next) => {
                 })
             } else {
                 const token = jwt.sign({
+                    id: data._id,
                     isAdmin: data.isAdmin
                 }, process.env.SECRET, {
                     expiresIn: '12h'
@@ -73,7 +84,16 @@ const adminLogin = async (req, res, next) => {
     }
 };
 
-const total = (req,  res,  next) => {
+const allAdmins = (req,  res,  next) => {
+    Admin.find({},  (err, data, next) => {
+        if(err) next(next);
+        else{
+          return res.status(200).json({data})
+        }
+    })
+};
+
+const allUsers = (req,  res,  next) => {
     User.find({},  (err, data, next) => {
         if(err) next(next);
         else{
@@ -97,4 +117,4 @@ const  updateUser  = (req,  res,  next)  => {
   }   
 };
 
-module.exports = {adminReg, adminLogin, total, updateUser};
+module.exports = {adminReg, adminLogin, allAdmins, updateUser, allUsers};

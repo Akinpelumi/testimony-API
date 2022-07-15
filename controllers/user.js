@@ -3,29 +3,33 @@ const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 var dotenv = require('dotenv').config();
 
-const  signup  = (req,  res,  next) => {
-  const{  fullname, email,  password, isAdmin } = req.body;
+const  signup  = async(req,  res,  next) => {
+  const{  first_name, last_name, email,  password } = req.body;
   User.findOne({email},  (err, data) => {
     if(data) {
       return res.status(404).json({
-        message:  'User  already exist'
+        message:  `User with email '${email}' already exist`
       })
     }else {
       bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(password, salt, function(err, hash) {
-          console.log(err);
+        bcrypt.hash(password, salt, async function(err, hash) {
           const  newUser  = new User({
-            fullname,
+            first_name,
+            last_name,
             password: hash,
-            email,
-            isAdmin
+            email
           })
-          newUser.save((err) => {
+          const { _id, created_at, updated_at, isAdmin } = newUser
+          const data = {
+            _id, first_name, last_name, email, isAdmin, created_at, updated_at
+          }
+          await newUser.save((err) => {
             if (err) {
               return next(err)
             }else{
               return res.status(201).json({
-                message: 'Signup  Successful'
+                message: 'User Signup Successful',
+                data
               })
             }
           })
@@ -52,7 +56,7 @@ const login =  (req,  res,  next) => {
             message: 'invalid login details'
           })
         }else{
-          const token  = jwt.sign({ isAdmin: data.isAdmin}, process.env.SECRET, {expiresIn: "4h"})
+          const token  = jwt.sign({ id: data._id, isAdmin: data.isAdmin}, process.env.SECRET, {expiresIn: "4h"})
           return res.status(200).json({
             message: 'login successful',
             token

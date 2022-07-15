@@ -13,7 +13,7 @@ var adminRouter = require("./routes/adminRoutes");
 
 var app = express();  
  
-mongoose.connect(process.env.DATABASE_URL);
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
  
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
